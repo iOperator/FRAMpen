@@ -74,10 +74,11 @@ void LED2_off() {
 /**
  * Blink LED(s)
  */
-void toggle_led(uint8_t led, uint16_t speed)
+void toggle_led(unsigned int led, unsigned int speed)
 {
 	led_select = led;
-	timer_a_init(speed);
+	led_speed = speed;
+	timer_a_init(led_speed);
 }
 
 /**
@@ -103,7 +104,8 @@ void wdt_enable()
  * Hold watchdog timer
  */
 void wdt_disable() {
-	WDTCTL = WDTPW + WDTHOLD;  // Hold watchdog timer
+	WDTCTL = WDTPW + WDTHOLD + WDTCNTCL;  // Hold watchdog timer
+	wdt_cnt = 0;  // Reset watchdog seconds counter
 }
 
 /**
@@ -117,6 +119,9 @@ void record_data() {
 	fram_ptr = (unsigned int *)ADC_START_ADDR;
 
 	while(fram_ptr < (unsigned int *)(ADC_END_ADDR - 3)) {
+		if (button_flag == 1) {
+			break;
+		}
 		_nop();
 		adc_result = 0;  // Clear intermediate results
 		for (adc_cnt = 0; adc_cnt < 16; ++adc_cnt) {  // Sample 16 times
@@ -151,6 +156,7 @@ void record_data() {
 	}  // End while
 
 	// Done recording
+	toggle_led_off();
 	LED1_on();
 	LED2_on();
 	__delay_cycles(8000000);
@@ -167,12 +173,34 @@ void transmit_data() {
 
 	unsigned int *current_address_ptr = (unsigned int *)ADC_START_ADDR;
 
-	while(current_address_ptr < (unsigned int *)(ADC_END_ADDR - 3)) {
+	while(current_address_ptr < (unsigned int *)ADC_END_ADDR) {
 		while (UCBUSY & UCA0STATW) {};            // Wait while UART is busy
 		UCA0TXBUF = (*current_address_ptr) >> 8;  // Send high byte first
 		while (UCBUSY & UCA0STATW) {};            // Wait while UART is busy
 		UCA0TXBUF = *current_address_ptr;         // Send low byte
 		current_address_ptr++;
 	}
+}
 
+/**
+ * Deletes all coordinate data stored in FRAM
+ */
+void delete_data() {
+	unsigned int *current_address_ptr = (unsigned int *)ADC_START_ADDR;
+
+	while(current_address_ptr < (unsigned int *)ADC_END_ADDR) {
+		*current_address_ptr = 0xFFFF;
+		current_address_ptr++;
+	}
+	// Done deleting
+	unsigned int i = 0;
+	toggle_led_off();
+	for (i = 0; i < 5; i++) {
+		LED1_on();
+		LED2_on();
+		__delay_cycles(1000000);
+		LED1_off();
+		LED2_off();
+		__delay_cycles(1000000);
+	}
 }

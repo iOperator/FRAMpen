@@ -10,6 +10,7 @@
 #ifndef FRAMPEN_H_
 #define FRAMPEN_H_
 
+
 /**
  * Defines
  */
@@ -58,10 +59,11 @@ enum button_states {
 
 extern volatile unsigned int *fram_ptr;  // Pointer to FRAM data block
 extern volatile unsigned int adc_result;  // Stores intermediate ADC results
+extern volatile unsigned int adc_cnt;  // ADC conversion counter
 extern volatile unsigned int led_select;  // Select LED(s) to toggle
+extern volatile unsigned int led_speed;  // Store current LED off time
 extern volatile unsigned int wdt_cnt;  // Count seconds till shutdown
 extern volatile unsigned int button_flag;  // Push button flag for ISR
-extern volatile unsigned int adc_cnt;  // ADC conversion counter
 
 
 #endif /* FRAMPEN_H_ */

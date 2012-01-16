@@ -23,22 +23,9 @@ void main(void) {
 	volatile enum button_states button_state;
 	button_state = NO_PUSH;
 
-//	PMMCTL0_H = PMMPW_H;  // open PMM
-//	PM5CTL0 &= ~LOCKLPM5;  // Clear LOCKIO and enable ports
-//	PMMCTL0_H = 0x00;  // close PMM
+	__enable_interrupt();
 
-//	P4IFG = 0;  // P4 IFG cleared
-
-	// wdt_enable();
-
-	// LED1_on();
-
-
-	while(1){
-
-		__enable_interrupt();
-		LPM3;
-		_nop();
+	while(1) {
 
 		/* Check push button */
 		if (button_flag == 1) {
@@ -61,6 +48,8 @@ void main(void) {
 					LED2_on();
 				}
 			}
+			__delay_cycles(400000);  // Wait 50 msec to debounce
+			__delay_cycles(400000);  // Wait 50 msec to debounce
 		}
 
 		LED1_off();
@@ -70,15 +59,20 @@ void main(void) {
 		/* Check states */
 		switch (state) {
 			case IDLE:
-				toggle_led(LED1_PIN, TIME_3SEC);
+//				toggle_led(LED1_PIN, TIME_3SEC);
 				switch (button_state) {
 					case LONG_PUSH:
-//						state = TRANSMIT;
+						state = TRANSMIT;
+						wdt_disable();
+						toggle_led(LED2_PIN, TIME_05SEC);
+						LED2_off();
 						transmit_data();
 						break;
 					case SHORT_PUSH:
-//						state = RECORD;
-						toggle_led_off();
+						state = RECORD;
+						wdt_disable();
+						toggle_led(LED1_PIN, TIME_1SEC);
+						LED1_off();
 						record_data();
 						break;
 					default:
@@ -87,20 +81,19 @@ void main(void) {
 				break;
 
 			case RECORD:
-				toggle_led(LED1_PIN, TIME_1SEC);
 				switch (button_state) {
-					case LONG_PUSH:
+					case LONG_PUSH:  // Delete data
+						delete_data();
 						break;
-					case SHORT_PUSH:
-						// Stop recording
-
+					case SHORT_PUSH:  // Stop recording
+						// Recording stop from inside recorde()
 						break;
 					default:
 						break;
 				}
+				state = IDLE;
 				break;
 			case TRANSMIT:
-				toggle_led(LED1_PIN, TIME_05SEC);
 				switch (button_state) {
 					case LONG_PUSH:
 						break;
@@ -109,12 +102,21 @@ void main(void) {
 					default:
 						break;
 				}
+				state = IDLE;
 				break;
 			default:
 				break;
 		}
 
-		button_state = NO_PUSH;
+		//button_state = NO_PUSH;
+		PAIE |= BIT0;  // Enable interrupt for push button
+
+		if (state == IDLE) {
+			toggle_led(LED1_PIN, TIME_3SEC);
+			wdt_enable();  // Activate auto-deep-sleep-watchdog
+			LPM3;
+			_nop();
+		}
 
 	}
 

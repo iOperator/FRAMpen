@@ -12,6 +12,7 @@
 
 #include "stdint.h"
 
+
 /* Setup WDT, CS and ports */
 void init_system();
 
@@ -22,7 +23,7 @@ void init_adc();
 void init_uart();
 
 /* Setup TimerA */
-void timer_a_init(uint16_t speed);
+void timer_a_init(unsigned int speed);
 
 
 #endif /* INIT_H_ */

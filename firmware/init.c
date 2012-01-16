@@ -85,6 +85,13 @@ void init_system() {
     CSCTL2 = SELA_0 + SELS_3 + SELM_3;  // Set ACLK = XT1; SMCLK = DCO; MCLK = DCO
     CSCTL3 = DIVA_0 + DIVS_0 + DIVM_0;  // Set all dividers
 
+    /* Wake up from LPM.5*/
+    PMMCTL0_H = PMMPW_H;  // Unlock PMM control register
+    PM5CTL0 &= ~LOCKLPM5;  // Clear Lock I/O and enable ports
+    PMMCTL0_H = 0x00;  // Lock PMM control register
+
+    P4IFG = 0;  // Make sure Port 4 interrupt flag is cleared
+
     /* Wait for stable XT1 */
     do {
     	CSCTL5 &= ~XT1OFFG;  // Clear XT1 fault flag
@@ -130,7 +137,7 @@ void init_uart() {
 /**
  *  Setup TimerA
  */
-void timer_a_init(uint16_t speed) {
+void timer_a_init(unsigned int speed) {
 
 	TA0CTL = MC_0 + TACLR;        // Stop timer and clear TAxR
 	TA0CTL |= (TASSEL_1 + ID_3);  // Source ACLK, divider /8

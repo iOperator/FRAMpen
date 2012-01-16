@@ -35,7 +35,7 @@ void LED2_on();
 void LED2_off();
 
 /* Toggle LED(s) */
-void toggle_led(uint8_t led, uint16_t speed);
+void toggle_led(unsigned int led, unsigned int speed);
 
 /* Stop toggle LED(s) */
 void toggle_led_off();
@@ -51,6 +51,9 @@ void record_data();
 
 /* Transmit coordinate data via UART */
 void transmit_data();
+
+/* Delete data */
+void delete_data();
 
 
 #endif /* SUBROUTINES_H_ */

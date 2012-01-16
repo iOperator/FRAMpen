@@ -9,6 +9,7 @@
 
 #include "msp430fr5739.h"
 #include "FRAMpen.h"
+#include "subroutines.h"
 
 
 // TimerA interrupt service routine
@@ -17,10 +18,30 @@ __interrupt void TIMER0_A0_ISR(void) {
 	TA0CCTL0 &= ~CCIFG;  // Reset interrupt flag
 	switch(led_select) {
 		case LED1_PIN:
-			LED1_OUT ^= LED1_PIN;
+			if (!(LED1_OUT & LED1_PIN)) {  // LED is off
+				TA0CTL |= MC_0 + TACLR;
+				TA0CCR0 = TIME_ON;
+				TA0CTL |= MC_1;
+				LED1_OUT |= (LED1_PIN);
+			} else {  // LED is on
+				TA0CTL |= MC_0 + TACLR;
+				TA0CCR0 = led_speed;
+				TA0CTL |= MC_1;
+				LED1_OUT &= ~(LED1_PIN);
+			}
 			break;
 		case LED2_PIN:
-			LED2_OUT ^= LED2_PIN;
+			if (!(LED2_OUT & LED2_PIN)) {  // LED is off
+				TA0CTL |= MC_0 + TACLR;
+				TA0CCR0 = TIME_ON;
+				TA0CTL |= MC_1;
+				LED2_OUT |= (LED2_PIN);
+			} else {  // LED is on
+				TA0CTL |= MC_0 + TACLR;
+				TA0CCR0 = led_speed;
+				TA0CTL |= MC_1;
+				LED2_OUT &= ~(LED2_PIN);
+			}
 			break;
 		case LED_BOTH:
 			LED1_OUT ^= LED1_PIN;
@@ -62,13 +83,14 @@ __interrupt void WDT_ISR(void) {
 		LED2_OUT &= ~(LED2_PIN);          // Make sure that LED1 is off
 		__enable_interrupt();             // Ensure that interrupts are enabled
 		// PMMCTL0 |= PMMPW + PMMREGOFF;  // Unlock PMM register and set flag to enter LPM4.5 with LPM4 request
-		PMMCTL0_H = PMMPW_H;
-		PMMCTL0_L |= PMMREGOFF;
+		PMMCTL0_H = PMMPW_H;              //
+		PMMCTL0_L |= PMMREGOFF;           //
 		LPM4;  // Now enter LPM4.5
 	} else if(wdt_cnt > 15) {
 		LED1_OUT &= ~(LED1_PIN);  // Make sure that LED1 is off
 		LED2_OUT ^= LED2_PIN;     // Toggle LED2
 	} else if(wdt_cnt > 10) {
+		toggle_led_off();
 		LED1_OUT ^= LED1_PIN;     // Toggle LED1
     }
 }
@@ -80,9 +102,9 @@ __interrupt void Port4InterruptHandler(void) {
 		case P4IV_NONE:
 			break;
 	    case P4IV_P4IFG0:
-	    	PAIE &= ~BIT0;  // Disable interrupt on P4.0
+	    	PAIE &= ~BIT0;  // Disable interrupt for push button
+	    	wdt_cnt = 0;  // Reset watchdog seconds counter on key press
 	    	button_flag = 1;
-	    	// LED2_OUT |= LED2_PIN;
 	    	LPM4_EXIT;  // Stay in active mode after ISR
 	    	break;
 	    case P4IV_P4IFG1:
