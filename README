@@ -1,0 +1,17 @@
+FRAMpen
+Max Gröning
+Thomas Bendel
+2011, 2012
+
+A project for the MSP430 FRAM challenge for TI Freising interns.
+
+http://processors.wiki.ti.com/index.php/FRAMpen
+
+
+Files & folders:
+
+doc         Documentation.
+firmware    The software for the MSP430FR5739.
+pcb         The pcb files. (EAGLE 6)
+software    Python script.
+README      This file.
