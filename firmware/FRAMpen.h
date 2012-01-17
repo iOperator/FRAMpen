@@ -32,10 +32,10 @@
 #define LED_BOTH          (LED1_PIN + LED2_PIN)
 
 /* Time periods */
-#define TIME_3SEC         12288
-#define TIME_1SEC         4096
-#define TIME_05SEC        2048
-#define TIME_ON           128
+#define TIME_3SEC         12288  // Off time for LEDs
+#define TIME_1SEC         4096   //
+#define TIME_05SEC        2048   //
+#define TIME_ON           128  // On duration for pulsed LED
 
 #define TIME_SHORT_PUSH   250   // In msec
 #define TIME_LONG_PUSH    2000  //

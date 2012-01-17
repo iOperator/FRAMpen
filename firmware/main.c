@@ -35,6 +35,7 @@ void main(void) {
 			unsigned int push_cnt = 0;
 			button_state = NO_PUSH;
 			__delay_cycles(200000);  // Wait 25 msec to debounce
+			__delay_cycles(200000);  // Wait 25 msec to debounce
 			while (!(P4IN & BIT0)) {  // Button pushed
 				__delay_cycles(8000);  // Wait 1 msec
 				push_cnt++;
