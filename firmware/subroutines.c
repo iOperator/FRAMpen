@@ -155,14 +155,17 @@ void record_data() {
 		fram_ptr++;
 	}  // End while
 
-	// Done recording
-	toggle_led_off();
-	LED1_on();
-	LED2_on();
-	__delay_cycles(8000000);
-	__delay_cycles(8000000);
-	LED1_off();
-	LED2_off();
+	// Done recording, FRAM full
+	if (button_flag == 0) {  // Skip if recording stopt prior to full FRAM
+		toggle_led_off();
+		LED1_on();
+		LED2_on();
+		__delay_cycles(8000000);
+		__delay_cycles(8000000);
+		LED1_off();
+		LED2_off();
+	}
+
 }
 
 /**

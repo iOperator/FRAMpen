@@ -79,14 +79,14 @@ __interrupt void WDT_ISR(void) {
 	SFRIFG1 &= ~(WDTIFG);  // Clear interrupt flag
 	wdt_cnt++;             // Increment WDT counter to count seconds
 
-	if(wdt_cnt > 20) {
+	if(wdt_cnt >= 20) {
 		LED2_OUT &= ~(LED2_PIN);          // Make sure that LED1 is off
 		__enable_interrupt();             // Ensure that interrupts are enabled
 		// PMMCTL0 |= PMMPW + PMMREGOFF;  // Unlock PMM register and set flag to enter LPM4.5 with LPM4 request
 		PMMCTL0_H = PMMPW_H;              //
 		PMMCTL0_L |= PMMREGOFF;           //
 		LPM4;  // Now enter LPM4.5
-	} else if(wdt_cnt > 15) {
+	} else if(wdt_cnt >= 15) {
 		LED1_OUT &= ~(LED1_PIN);  // Make sure that LED1 is off
 		LED2_OUT ^= LED2_PIN;     // Toggle LED2
 	} else if(wdt_cnt > 10) {

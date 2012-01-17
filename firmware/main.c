@@ -84,14 +84,16 @@ void main(void) {
 				switch (button_state) {
 					case LONG_PUSH:  // Delete data
 						delete_data();
+						state = IDLE;
 						break;
 					case SHORT_PUSH:  // Stop recording
 						// Recording stop from inside recorde()
+						state = IDLE;
 						break;
 					default:
 						break;
 				}
-				state = IDLE;
+//				state = IDLE;
 				break;
 			case TRANSMIT:
 				switch (button_state) {
