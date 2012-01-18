@@ -45,7 +45,7 @@
 // Do not use this section for code or data placement.
 // It will get overwritten!
 #define ADC_START_ADDR    0xD400
-#define ADC_END_ADDR      0xF000
+#define ADC_END_ADDR      0xEFFF
 
 // States
 enum states {

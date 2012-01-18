@@ -118,7 +118,7 @@ void record_data() {
 
 	fram_ptr = (unsigned int *)ADC_START_ADDR;
 
-	while(fram_ptr < (unsigned int *)(ADC_END_ADDR - 3)) {
+	while(fram_ptr <= (unsigned int *)(ADC_END_ADDR - 3)) {
 		if (button_flag == 1) {
 			break;
 		}
@@ -176,7 +176,7 @@ void transmit_data() {
 
 	unsigned int *current_address_ptr = (unsigned int *)ADC_START_ADDR;
 
-	while(current_address_ptr < (unsigned int *)ADC_END_ADDR) {
+	while(current_address_ptr <= (unsigned int *)ADC_END_ADDR) {
 		while (UCBUSY & UCA0STATW) {};            // Wait while UART is busy
 		UCA0TXBUF = (*current_address_ptr) >> 8;  // Send high byte first
 		while (UCBUSY & UCA0STATW) {};            // Wait while UART is busy
@@ -191,7 +191,7 @@ void transmit_data() {
 void delete_data() {
 	unsigned int *current_address_ptr = (unsigned int *)ADC_START_ADDR;
 
-	while(current_address_ptr < (unsigned int *)ADC_END_ADDR) {
+	while(current_address_ptr <= (unsigned int *)ADC_END_ADDR) {
 		*current_address_ptr = 0xFFFF;
 		current_address_ptr++;
 	}
