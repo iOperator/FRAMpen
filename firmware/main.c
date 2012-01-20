@@ -49,12 +49,11 @@ void main(void) {
 					LED2_on();
 				}
 			}
+			LED1_off();
+			LED2_off();
 			__delay_cycles(400000);  // Wait 50 msec to debounce
 			__delay_cycles(400000);  // Wait 50 msec to debounce
 		}
-
-		LED1_off();
-		LED2_off();
 
 
 		/* Check states */
@@ -65,15 +64,15 @@ void main(void) {
 					case LONG_PUSH:
 						state = TRANSMIT;
 						wdt_disable();
+						LED1_off();
 						toggle_led(LED2_PIN, TIME_05SEC);
-						LED2_off();
 						transmit_data();
 						break;
 					case SHORT_PUSH:
 						state = RECORD;
 						wdt_disable();
+						LED2_off();
 						toggle_led(LED1_PIN, TIME_1SEC);
-						LED1_off();
 						record_data();
 						break;
 					default:
