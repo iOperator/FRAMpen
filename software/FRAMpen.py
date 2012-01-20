@@ -4,16 +4,16 @@
 http://processors.wiki.ti.com/index.php/FRAMpen
 """
 
-__author__    = "Max Groening, Thomas Bendel"
+__author__ = "Max Groening, Thomas Bendel"
 
 #################
 # Configuration #
 #################
 
-MAX_BYTES = 7164  # Maximum number of bytes to read
+MAX_BYTES = 6666 #7164  # Maximum number of bytes to read
 BAUDRATE = 9600
 PORT = 2  # Windows ports start from '0'(=COM1), Linux: e.g. '/dev/ttyS1'
-TIMEOUT = 30 # Timeout in seconds
+TIMEOUT = 30  # Timeout in seconds
 
 DATA_RAW_FILENAME = 'raw.dat'
 DATA_ACC_FILENAME = 'acc.dat'
@@ -21,11 +21,17 @@ DATA_VEL_FILENAME = 'vel.dat'
 DATA_POS_FILENAME = 'pos.dat'
 DEBUG = False
 
+AVERAGES_X = 10  # Number of samples for moving average
+AVERAGES_Y = 10  #
+AVERAGES_Z = 10  #
+
+
 ##############################################
 # No configuration needed beyond this point. #
 ##############################################
 
 import serial  # PySerial
+from test import *  # Test samples
 
 ### Get the data via serial connection #######################################
 
@@ -53,7 +59,7 @@ data_8 = []
 for entry in raw_data:
 	data_8.append(ord(entry))
 
-# Join too (decimal) 'bytes' back into one word
+# Join to (decimal) 'bytes' back into one word
 # Shift 'high byte' back by multiplying with 8
 data_16 = []
 for high_byte, low_byte in zip(data_8[0::2], data_8[1::2]):
@@ -84,6 +90,11 @@ if DEBUG:
  	print(data_y)
  	print(data_z)
 
+# # Load test samples
+# data_x = sample1_raw_x
+# data_y = sample1_raw_y
+# data_z = sample1_raw_z
+
 # Output raw data
 data_handle = open(DATA_RAW_FILENAME, 'w')
 
@@ -98,24 +109,61 @@ data_handle.close()
 ### Integrate acceleration ###################################################
 
 # Remove offset
-# TODO: Moving average
 x_offset_0 = data_x[0]
 y_offset_0 = data_y[0]
 z_offset_0 = data_z[0]
 acc_x = []  # Stores acceleration data without offset
 acc_y = []  #
 acc_z = []  #
-for datum in data_x:
-	acc_x.append(datum - x_offset_0)
-for datum in data_y:
-	acc_y.append(datum - y_offset_0)
-for datum in data_z:
-	acc_z.append(datum - z_offset_0)
+
+# # Moving average offset
+# # 3rd order
+# x_offset_3rd = [0] * len(data_x)
+# y_offset_3rd = [0] * len(data_y)
+# z_offset_3rd = [0] * len(data_z)
+# x_offset_3rd[0] = data_x[0]
+# y_offset_3rd[0] = data_y[0]
+# z_offset_3rd[0] = data_z[0]
+# for i in range(1, len(data_x) - 1):
+# 	x_offset_3rd[i] = (data_x[i-1] + data_x[i] + data_x[i+1]) / 3
+# 	y_offset_3rd[i] = (data_y[i-1] + data_y[i] + data_y[i+1]) / 3
+# 	z_offset_3rd[i] = (data_z[i-1] + data_z[i] + data_z[i+1]) / 3
+# x_offset_3rd[-1] = (data_x[-2] + data_x[-1] + data_x[-1]) / 3
+# y_offset_3rd[-1] = (data_y[-2] + data_y[-1] + data_y[-1]) / 3
+# z_offset_3rd[-1] = (data_z[-2] + data_z[-1] + data_z[-1]) / 3
+
+# for i in range(len(data_x)):
+# 	acc_x.append(data_x[i] - x_offset_3rd[i])
+# 	acc_y.append(data_y[i] - y_offset_3rd[i])
+# 	acc_z.append(data_z[i] - z_offset_3rd[i])
+
+# Moving average
+average_values_x = [data_x[0]] * AVERAGES_X
+average_values_y = [data_y[0]] * AVERAGES_Y
+average_values_z = [data_z[0]] * AVERAGES_Z
+
+for i in range(len(data_x)):
+	# right ship 'average_values', insert current sample at first position
+	average_values_x = [data_x[i]] + average_values_x[:-1]
+	average_values_y = [data_y[i]] + average_values_y[:-1]
+	average_values_z = [data_z[i]] + average_values_z[:-1]
+	acc_x.append(data_x[i] - sum(average_values_x) / float(AVERAGES_X))
+	acc_y.append(data_y[i] - sum(average_values_y) / float(AVERAGES_Y))
+	acc_z.append(data_z[i] - sum(average_values_z) / float(AVERAGES_Z))
+
+# # Static offset
+# for datum in data_x:
+# 	acc_x.append(datum - x_offset_0)
+# for datum in data_y:
+# 	acc_y.append(datum - y_offset_0)
+# for datum in data_z:
+# 	acc_z.append(datum - z_offset_0)
 
 if DEBUG:
 	print(acc_x)
 	print(acc_y)
 	print(acc_z)
+
 
 # Output acceleration data
 data_handle = open(DATA_ACC_FILENAME, 'w')
